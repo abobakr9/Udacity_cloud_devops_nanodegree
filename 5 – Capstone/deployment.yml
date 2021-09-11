@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capstone-deployment
+spec:
+  replicas: 2
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: capstone
+  template:
+    metadata:
+      labels:
+        app: capstone
+    spec:
+      containers:
+        - name: capstone
+          image: $dockerpath:${CIRCLE_WORKFLOW_ID:0:7}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+
+# access this application through internet 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: capstone-loadbalancer
+spec:
+  type: LoadBalancer
+  selector:
+    app: capstone
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
